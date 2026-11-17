@@ -1,0 +1,29 @@
+services:
+  agriculture-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gengce-agriculture-agent
+    init: true
+    ports:
+      - "8787:8787"
+    environment:
+      PORT: "8787"
+      DATABASE_PATH: "/data/agri.db"
+      MODEL_PROVIDER: "${MODEL_PROVIDER:-mock}"
+      MODEL_BASE_URL: "${MODEL_BASE_URL:-https://api.deepseek.com}"
+      MODEL_API_KEY: "${MODEL_API_KEY:-}"
+      MODEL_NAME: "${MODEL_NAME:-deepseek-chat}"
+      MODEL_SUMMARY_NAME: "${MODEL_SUMMARY_NAME:-}"
+      MODEL_VISION_NAME: "${MODEL_VISION_NAME:-}"
+      DASHSCOPE_API_KEY: "${DASHSCOPE_API_KEY:-}"
+      OPEN_METEO_TIMEOUT_MS: "${OPEN_METEO_TIMEOUT_MS:-6000}"
+      SOILGRIDS_TIMEOUT_MS: "${SOILGRIDS_TIMEOUT_MS:-4500}"
+      AMAP_JS_KEY: "${AMAP_JS_KEY:-}"
+      AMAP_SECURITY_CODE: "${AMAP_SECURITY_CODE:-}"
+    volumes:
+      - agriculture-data:/data
+    restart: unless-stopped
+
+volumes:
+  agriculture-data:

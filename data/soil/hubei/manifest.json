@@ -1,0 +1,328 @@
+{
+  "dataset": "ISRIC SoilGrids 2.0",
+  "license": "CC BY 4.0",
+  "source": "https://maps.isric.org/",
+  "documentation": "https://docs.isric.org/globaldata/soilgrids/wcs.html",
+  "unitsDocumentation": "https://docs.isric.org/globaldata/soilgrids/SoilGrids_faqs_01.html",
+  "region": "湖北覆盖矩形，包含部分相邻省份；未按行政边界掩膜",
+  "requestedBoundsWgs84": [
+    108.3,
+    29,
+    116.2,
+    33.3
+  ],
+  "depth": "0-5cm",
+  "statistic": "mean",
+  "outputCRS": "EPSG:4326",
+  "sourceResolution": "250 m native grid; WCS reprojected output, see actual pixel size",
+  "createdAt": "2026-11-13T04:06:08.024Z",
+  "status": "complete",
+  "layers": [
+    {
+      "property": "phh2o",
+      "name": "pH（水浸提）",
+      "file": "phh2o_0-5cm_mean_hubei_bbox.tif",
+      "coverageId": "phh2o_0-5cm_mean",
+      "coverageRequest": "https://maps.isric.org/mapserv?map=%2Fmap%2Fphh2o.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=phh2o_0-5cm_mean&FORMAT=GEOTIFF_INT16&SUBSETTINGCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&OUTPUTCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&SUBSET=X%28108.3%2C116.2%29&SUBSET=Y%2829%2C33.3%29",
+      "acquisition": "Single official WCS coverage response",
+      "verifiedAt": "2026-11-13T04:06:08.696Z",
+      "bytes": 2452437,
+      "sha256": "d18aa5e5c28621129a97b547d8056210301f2b79b0efde083cae79a89a5cdca6",
+      "width": 3495,
+      "height": 1799,
+      "boundsWgs84": [
+        108.3,
+        29,
+        116.2,
+        33.3
+      ],
+      "pixelSizeDegrees": [
+        0.002260371959942775,
+        -0.002390216787103944
+      ],
+      "noData": null,
+      "storedUnit": "pH × 10",
+      "conversion": "raw / 10",
+      "unit": "pH",
+      "validPixels": 5986163,
+      "missingPixels": 301342,
+      "min": 4.8,
+      "max": 8.1,
+      "samples": [
+        {
+          "place": "襄阳",
+          "longitude": 112.211,
+          "latitude": 32.087,
+          "value": null,
+          "unit": "pH"
+        },
+        {
+          "place": "武汉",
+          "longitude": 114.321,
+          "latitude": 30.348,
+          "value": null,
+          "unit": "pH"
+        },
+        {
+          "place": "宜昌",
+          "longitude": 111.286,
+          "latitude": 30.692,
+          "value": null,
+          "unit": "pH"
+        },
+        {
+          "place": "参考栅格点A",
+          "longitude": 112.26,
+          "latitude": 31.65,
+          "value": 7.4,
+          "unit": "pH"
+        },
+        {
+          "place": "参考栅格点B",
+          "longitude": 112.8,
+          "latitude": 30.2,
+          "value": 7.1,
+          "unit": "pH"
+        },
+        {
+          "place": "参考栅格点C",
+          "longitude": 111.8,
+          "latitude": 30.8,
+          "value": 6.7,
+          "unit": "pH"
+        }
+      ]
+    },
+    {
+      "property": "soc",
+      "name": "土壤有机碳",
+      "file": "soc_0-5cm_mean_hubei_bbox.tif",
+      "coverageId": "soc_0-5cm_mean",
+      "coverageRequest": "https://maps.isric.org/mapserv?map=%2Fmap%2Fsoc.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=soc_0-5cm_mean&FORMAT=GEOTIFF_INT16&SUBSETTINGCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&OUTPUTCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&SUBSET=X%28108.3%2C116.2%29&SUBSET=Y%2829%2C33.3%29",
+      "acquisition": "Official WCS 4x4 subrequests, SCALESIZE aligned to pH output grid, then lossless 16-bit integer mosaic; see scripts/soil-tiles.mjs",
+      "verifiedAt": "2026-11-13T04:06:08.854Z",
+      "bytes": 12576010,
+      "sha256": "8f4d6f5ad5555ad9e2d3e7a70c86c50bfb269be3507579134f8b3d9b831c4984",
+      "width": 3495,
+      "height": 1799,
+      "boundsWgs84": [
+        108.3,
+        29,
+        116.2,
+        33.3
+      ],
+      "pixelSizeDegrees": [
+        0.002260371959942777,
+        -0.002390216787103945
+      ],
+      "noData": 65535,
+      "storedUnit": "dg/kg",
+      "conversion": "raw / 10",
+      "unit": "g/kg",
+      "validPixels": 5986163,
+      "missingPixels": 301342,
+      "min": 0,
+      "max": 129.6,
+      "samples": [
+        {
+          "place": "襄阳",
+          "longitude": 112.211,
+          "latitude": 32.087,
+          "value": null,
+          "unit": "g/kg"
+        },
+        {
+          "place": "武汉",
+          "longitude": 114.321,
+          "latitude": 30.348,
+          "value": null,
+          "unit": "g/kg"
+        },
+        {
+          "place": "宜昌",
+          "longitude": 111.286,
+          "latitude": 30.692,
+          "value": null,
+          "unit": "g/kg"
+        },
+        {
+          "place": "参考栅格点A",
+          "longitude": 112.26,
+          "latitude": 31.65,
+          "value": 20.9,
+          "unit": "g/kg"
+        },
+        {
+          "place": "参考栅格点B",
+          "longitude": 112.8,
+          "latitude": 30.2,
+          "value": 29.4,
+          "unit": "g/kg"
+        },
+        {
+          "place": "参考栅格点C",
+          "longitude": 111.8,
+          "latitude": 30.8,
+          "value": 23.3,
+          "unit": "g/kg"
+        }
+      ]
+    },
+    {
+      "property": "sand",
+      "name": "砂粒含量",
+      "file": "sand_0-5cm_mean_hubei_bbox.tif",
+      "coverageId": "sand_0-5cm_mean",
+      "coverageRequest": "https://maps.isric.org/mapserv?map=%2Fmap%2Fsand.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=sand_0-5cm_mean&FORMAT=GEOTIFF_INT16&SUBSETTINGCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&OUTPUTCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&SUBSET=X%28108.3%2C116.2%29&SUBSET=Y%2829%2C33.3%29",
+      "acquisition": "Official WCS 4x4 subrequests, SCALESIZE aligned to pH output grid, then lossless 16-bit integer mosaic; see scripts/soil-tiles.mjs",
+      "verifiedAt": "2026-11-13T04:06:09.008Z",
+      "bytes": 12576010,
+      "sha256": "7af1630afcc6c6d4364bacac3a1afa4bbae2e348737daed1c4e0409c08b31aa8",
+      "width": 3495,
+      "height": 1799,
+      "boundsWgs84": [
+        108.3,
+        29,
+        116.2,
+        33.3
+      ],
+      "pixelSizeDegrees": [
+        0.002260371959942777,
+        -0.002390216787103945
+      ],
+      "noData": 65535,
+      "storedUnit": "g/kg",
+      "conversion": "raw / 10",
+      "unit": "%",
+      "validPixels": 5986163,
+      "missingPixels": 301342,
+      "min": 2,
+      "max": 78.2,
+      "samples": [
+        {
+          "place": "襄阳",
+          "longitude": 112.211,
+          "latitude": 32.087,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "武汉",
+          "longitude": 114.321,
+          "latitude": 30.348,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "宜昌",
+          "longitude": 111.286,
+          "latitude": 30.692,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点A",
+          "longitude": 112.26,
+          "latitude": 31.65,
+          "value": 34.9,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点B",
+          "longitude": 112.8,
+          "latitude": 30.2,
+          "value": 22.9,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点C",
+          "longitude": 111.8,
+          "latitude": 30.8,
+          "value": 34.4,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "property": "clay",
+      "name": "黏粒含量",
+      "file": "clay_0-5cm_mean_hubei_bbox.tif",
+      "coverageId": "clay_0-5cm_mean",
+      "coverageRequest": "https://maps.isric.org/mapserv?map=%2Fmap%2Fclay.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=clay_0-5cm_mean&FORMAT=GEOTIFF_INT16&SUBSETTINGCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&OUTPUTCRS=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4326&SUBSET=X%28108.3%2C116.2%29&SUBSET=Y%2829%2C33.3%29",
+      "acquisition": "Official WCS 4x4 subrequests, SCALESIZE aligned to pH output grid, then lossless 16-bit integer mosaic; see scripts/soil-tiles.mjs",
+      "verifiedAt": "2026-11-13T04:06:09.177Z",
+      "bytes": 12576010,
+      "sha256": "63bfe5fb4497b81a9d032bde7c9d57017f8b42da1a396499aff160941dcbec9a",
+      "width": 3495,
+      "height": 1799,
+      "boundsWgs84": [
+        108.3,
+        29,
+        116.2,
+        33.3
+      ],
+      "pixelSizeDegrees": [
+        0.002260371959942777,
+        -0.002390216787103945
+      ],
+      "noData": 65535,
+      "storedUnit": "g/kg",
+      "conversion": "raw / 10",
+      "unit": "%",
+      "validPixels": 5986163,
+      "missingPixels": 301342,
+      "min": 7.7,
+      "max": 47.5,
+      "samples": [
+        {
+          "place": "襄阳",
+          "longitude": 112.211,
+          "latitude": 32.087,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "武汉",
+          "longitude": 114.321,
+          "latitude": 30.348,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "宜昌",
+          "longitude": 111.286,
+          "latitude": 30.692,
+          "value": null,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点A",
+          "longitude": 112.26,
+          "latitude": 31.65,
+          "value": 26.2,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点B",
+          "longitude": 112.8,
+          "latitude": 30.2,
+          "value": 32,
+          "unit": "%"
+        },
+        {
+          "place": "参考栅格点C",
+          "longitude": 111.8,
+          "latitude": 30.8,
+          "value": 28.4,
+          "unit": "%"
+        }
+      ]
+    }
+  ],
+  "validityMask": {
+    "file": "validity-mask.bin",
+    "layout": "row-major, 1 byte per pixel; 1=usable, 0=unavailable",
+    "rule": "phh2o raw > 0 and <= 140 and not tagged NoData; applied to all aligned layers. Zero clay/sand values inside valid cells remain valid."
+  },
+  "totalBytes": 46467972
+}

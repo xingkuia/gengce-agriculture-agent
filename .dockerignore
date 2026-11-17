@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-server
+data
+.git
+.env
+.edge-profile*
+tmp
+output
+test-results
+__pycache__
+*.log
+scripts
+tests

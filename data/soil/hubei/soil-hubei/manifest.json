@@ -1,0 +1,26 @@
+{
+  "dataset": "ISRIC SoilGrids 2.0",
+  "license": "CC BY 4.0",
+  "source": "https://maps.isric.org/",
+  "depth": "0-5cm",
+  "statistic": "mean",
+  "bounds": [
+    108.3,
+    29,
+    116.2,
+    33.3
+  ],
+  "width": 3495,
+  "height": 1799,
+  "properties": [
+    "phh2o",
+    "soc",
+    "sand",
+    "clay"
+  ],
+  "divisor": 10,
+  "noData": 65535,
+  "layout": "row-major, 4 interleaved uint16 little-endian values per pixel",
+  "bytes": 50300040,
+  "sha256": "a163bbedbad63b8c744b2ad45d0265bf5c55456e2b2112341e476cda616cce4c"
+}
