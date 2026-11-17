@@ -78,6 +78,7 @@ MODEL_VISION_NAME=qwen3-vl-plus
 - `OPEN_METEO_URL`：Open-Meteo 预报接口地址，默认 `https://api.open-meteo.com/v1/forecast`；网络受限时可改为允许访问的兼容代理地址。
 - `OPEN_METEO_TIMEOUT_MS`：天气接口超时，默认 `6000`。
 - `SOILGRIDS_TIMEOUT_MS`：土壤接口超时，默认 `4500`。
+- `SOIL_LOCAL_SEARCH_RADIUS_PIXELS`：本地土壤原像元缺测时搜索最近有效像元的半径，默认 `8`（约 2 km），最大可设为 `40`。
 
 所有密钥只允许保存在服务端环境变量中。
 

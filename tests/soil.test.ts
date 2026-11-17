@@ -39,7 +39,13 @@ test('offline grid converts units, rejects missing pixels and preserves manual s
     const soil=await getSoil(plot,{latitude:31.65,longitude:112.26});
     assert.equal(soil.source,'soilgrids-local');assert.equal(soil.ph,7.4);assert.equal(soil.organicCarbon,20.9);assert.equal(soil.sandPercent,34.9);assert.equal(soil.clayPercent,26.2);
     const outside=await getSoil(plot,{latitude:40,longitude:116});assert.equal(outside.isFallback,true);assert.match(outside.note,/覆盖范围/);
-    const water=await getSoil(plot,{latitude:32.087,longitude:112.211});assert.equal(water.isFallback,true);assert.match(water.note,/无有效数据/);
+    const water=await getSoil(plot,{latitude:32.087,longitude:112.211});assert.equal(water.source,'soilgrids-local');assert.equal(water.isFallback,false);assert.match(water.note,/最近有效像元/);
+    const originalRadius=process.env.SOIL_LOCAL_SEARCH_RADIUS_PIXELS;process.env.SOIL_LOCAL_SEARCH_RADIUS_PIXELS='0';
+    try {
+      const unavailable=await getSoil(plot,{latitude:32.087,longitude:112.211});assert.equal(unavailable.isFallback,true);assert.match(unavailable.note,/无有效数据/);
+    } finally {
+      if(originalRadius===undefined)delete process.env.SOIL_LOCAL_SEARCH_RADIUS_PIXELS;else process.env.SOIL_LOCAL_SEARCH_RADIUS_PIXELS=originalRadius;
+    }
     const manual={...regionalPrior(plot),source:'manual' as const,isFallback:false,ph:6.9};
     const saved=await getSoil(plot,{latitude:31.65,longitude:112.26},manual);assert.equal(saved.source,'manual');assert.equal(saved.ph,6.9);
     assert.equal(networkCalls,0,'local data, missing pixels and manual values must never access the network');

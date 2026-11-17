@@ -29,7 +29,7 @@ export async function getSoil(
 ): Promise<SoilSnapshot> {
   if(previous?.source==='manual')return {...previous,drainage:plot.drainage};
   const local=await readLocalSoil(plot,farm);
-  if(local.values){const [ph,soc,sand,clay]=local.values;return {source:'soilgrids-local',fetchedAt:new Date().toISOString(),isFallback:false,texture:classifyTexture(clay,sand),clayPercent:clay,sandPercent:sand,ph,organicCarbon:soc,drainage:plot.drainage,note:`本地 ${local.dataset}，${local.depth} 表层均值，按地块坐标读取；有机碳单位 g/kg，砂粒和黏粒单位 %。这是栅格预测，并非现场实测，施肥前仍需测土校准。`};}
+  if(local.values){const [ph,soc,sand,clay]=local.values;const sampleNote=local.approximation?`原地块像元缺测，改用距地块约 ${local.approximation.distanceKm.toFixed(2)} km 的最近有效像元；`:'按地块坐标读取；';return {source:'soilgrids-local',fetchedAt:new Date().toISOString(),isFallback:false,texture:classifyTexture(clay,sand),clayPercent:clay,sandPercent:sand,ph,organicCarbon:soc,drainage:plot.drainage,note:`本地 ${local.dataset}，${local.depth} 表层均值，${sampleNote}有机碳单位 g/kg，砂粒和黏粒单位 %。这是栅格预测，并非现场实测，施肥前仍需测土校准。`};}
   if(!local.missing)return {...regionalPrior(plot),note:`${local.reason}；当前使用区域先验估算，并非现场实测。请录入测土报告校准。`};
   const timeout = Number(process.env.SOILGRIDS_TIMEOUT_MS ?? 4500);
   const params = new URLSearchParams();
