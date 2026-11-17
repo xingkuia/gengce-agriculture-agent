@@ -241,30 +241,33 @@ try {
   await waitFor(()=>evaluate('Boolean(document.querySelector(".capability-view"))'),5000,'能力中心未打开');
   await waitFor(()=>evaluate('Boolean(document.querySelector(".capability-tabs")) && !document.querySelector(".capability-skeleton")'),8000,'能力中心数据未加载');
   if(await evaluate('document.documentElement.scrollWidth > innerWidth'))throw new Error('能力中心桌面横向溢出');
-  await evaluate(`[...document.querySelectorAll(".capability-panel-heading button")].find(button=>button.textContent.includes("添加服务"))?.click()`);
-  await waitFor(()=>evaluate('Boolean(document.querySelector(".mcp-editor"))'),3000,'MCP 新建表单未展开');
-  await evaluate(`(() => {
-    const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-    const name=document.querySelector('.mcp-editor input');
-    setter.call(name,'界面验收 MCP');
-    name.dispatchEvent(new Event('input',{bubbles:true}));
-    const transport=document.querySelector('.mcp-editor select');
-    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(transport,'stdio');
-    transport.dispatchEvent(new Event('change',{bubbles:true}));
-  })()`);
-  await waitFor(()=>evaluate('document.querySelectorAll(".mcp-editor select").length === 2'),3000,'MCP stdio 表单未切换');
-  await evaluate(`(() => {
-    const selects=document.querySelectorAll('.mcp-editor select');
-    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(selects[1],'node');
-    selects[1].dispatchEvent(new Event('change',{bubbles:true}));
-    const argsLabel=[...document.querySelectorAll('.mcp-editor label')].find(label=>label.textContent.includes('参数'));
-    const args=argsLabel?.querySelector('input');
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(args,${JSON.stringify(join(process.cwd(), "tests", "fixtures", "fake-mcp-server.mjs"))});
-    args.dispatchEvent(new Event('input',{bubbles:true}));
-  })()`);
-  await new Promise(resolve=>setTimeout(resolve,80));
-  await evaluate(`[...document.querySelectorAll('.capability-editor-actions button')].find(button=>button.textContent.includes('保存服务'))?.click()`);
-  await waitFor(()=>evaluate('document.querySelector(".capability-view")?.textContent.includes("界面验收 MCP")'),5000,'MCP 服务创建未显示');
+  const hasSeededDemoMcp = await evaluate(`fetch('/api/capabilities').then(r=>r.json()).then(data=>data.mcpServers.some(server=>server.name==='内置mcp'))`);
+  if(!hasSeededDemoMcp){
+    await evaluate(`[...document.querySelectorAll(".capability-panel-heading button")].find(button=>button.textContent.includes("添加服务"))?.click()`);
+    await waitFor(()=>evaluate('Boolean(document.querySelector(".mcp-editor"))'),3000,'MCP 新建表单未展开');
+    await evaluate(`(() => {
+      const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+      const name=document.querySelector('.mcp-editor input');
+      setter.call(name,'内置mcp');
+      name.dispatchEvent(new Event('input',{bubbles:true}));
+      const transport=document.querySelector('.mcp-editor select');
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(transport,'stdio');
+      transport.dispatchEvent(new Event('change',{bubbles:true}));
+    })()`);
+    await waitFor(()=>evaluate('document.querySelectorAll(".mcp-editor select").length === 2'),3000,'MCP stdio 表单未切换');
+    await evaluate(`(() => {
+      const selects=document.querySelectorAll('.mcp-editor select');
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(selects[1],'node');
+      selects[1].dispatchEvent(new Event('change',{bubbles:true}));
+      const argsLabel=[...document.querySelectorAll('.mcp-editor label')].find(label=>label.textContent.includes('参数'));
+      const args=argsLabel?.querySelector('input');
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(args,${JSON.stringify(join(process.cwd(), "tests", "fixtures", "fake-mcp-server.mjs"))});
+      args.dispatchEvent(new Event('input',{bubbles:true}));
+    })()`);
+    await new Promise(resolve=>setTimeout(resolve,80));
+    await evaluate(`[...document.querySelectorAll('.capability-editor-actions button')].find(button=>button.textContent.includes('保存服务'))?.click()`);
+  }
+  await waitFor(()=>evaluate('document.querySelector(".capability-view")?.textContent.includes("内置mcp")'),5000,'MCP 服务创建未显示');
   await evaluate(`[...document.querySelectorAll(".mcp-item .capability-inline-actions button")].find(button=>button.textContent.includes("发现工具"))?.click()`);
   await waitFor(()=>evaluate('document.querySelector(".capability-view")?.textContent.includes("只读可自动") && document.querySelector(".capability-view")?.textContent.includes("仅手动")'),8000,'MCP 只读状态标签未显示');
   await capture("desktop-capabilities-mcp.png");
@@ -309,12 +312,12 @@ try {
     Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(select,'confirm');
     select.dispatchEvent(new Event('change',{bubbles:true}));
   })()`);
-  await waitFor(()=>evaluate(`fetch('/api/capabilities').then(r=>r.json()).then(data=>data.mcpServers.some(server=>server.name==='界面验收 MCP'&&server.tools.some(tool=>tool.name==='read_field_weather'&&tool.executionMode==='confirm')))`),5000,'MCP 调用前确认策略未保存');
+  await waitFor(()=>evaluate(`fetch('/api/capabilities').then(r=>r.json()).then(data=>data.mcpServers.some(server=>server.name==='内置mcp'&&server.tools.some(tool=>tool.name==='read_field_weather'&&tool.executionMode==='confirm')))`),5000,'MCP 调用前确认策略未保存');
   await capture("desktop-capabilities-mcp-confirm.png");
   await evaluate(`(async () => {
     const bootstrap=await fetch('/api/bootstrap').then(r=>r.json());
     const capabilities=await fetch('/api/capabilities?accountId='+encodeURIComponent(bootstrap.account.id)+'&plotId='+encodeURIComponent(bootstrap.activePlotId)).then(r=>r.json());
-    const server=capabilities.mcpServers.find(item=>item.name==='界面验收 MCP');
+    const server=capabilities.mcpServers.find(item=>item.name==='内置mcp');
     await fetch('/api/capability-bindings',{
       method:'POST',
       headers:{'content-type':'application/json'},
@@ -342,7 +345,7 @@ try {
     return a.top>=b.top&&a.bottom<=b.bottom&&!document.querySelector('.mcp-approval-details[open]');
   })()`);
   if(!approvalCardVisible)throw new Error('MCP 调用确认卡片不可见或参数未默认折叠');
-  if(!await evaluate('document.querySelector(".mcp-approval-card")?.textContent.includes("界面验收 MCP")'))throw new Error('MCP 调用确认缺少服务来源');
+  if(!await evaluate('document.querySelector(".mcp-approval-card")?.textContent.includes("内置mcp")'))throw new Error('MCP 调用确认缺少服务来源');
   await capture("desktop-mcp-approval.png");
   await new Promise(resolve=>setTimeout(resolve,700));
   await send("Page.reload",{ignoreCache:true});
@@ -360,7 +363,7 @@ try {
   await evaluate(`(async () => {
     const bootstrap=await fetch('/api/bootstrap').then(r=>r.json());
     const capabilities=await fetch('/api/capabilities?accountId='+encodeURIComponent(bootstrap.account.id)+'&plotId='+encodeURIComponent(bootstrap.activePlotId)).then(r=>r.json());
-    const server=capabilities.mcpServers.find(item=>item.name==='界面验收 MCP');
+    const server=capabilities.mcpServers.find(item=>item.name==='内置mcp');
     await fetch('/api/capability-bindings',{
       method:'POST',
       headers:{'content-type':'application/json'},

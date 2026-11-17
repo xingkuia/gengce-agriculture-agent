@@ -139,6 +139,15 @@ test("Mastra capability snapshots persist scoped skills and local knowledge", as
     assert.equal(initial.status, 200);
     assert.equal(initial.data.runtime.engine, "Mastra Workflow");
     assert.equal(initial.data.skills.filter((skill: { kind: string }) => skill.kind === "system").length, 8);
+    const seededMcp = initial.data.mcpServers.find((server: { name: string }) =>
+      server.name === "内置mcp"
+    );
+    assert.ok(seededMcp);
+    assert.equal(seededMcp.status, "connected");
+    assert.equal(seededMcp.tools.length, 3);
+    const seededDiscovery = await request(`/api/mcp-servers/${seededMcp.id}/discover`, "POST", { accountId });
+    assert.equal(seededDiscovery.status, 200);
+    assert.equal(seededDiscovery.data.tools.length, 3);
 
     const sourceSkill = initial.data.skills.find((skill: { slug: string }) => skill.slug === "agronomy");
     const cloned = await request(`/api/skills/${sourceSkill.id}/clone`, "POST", {

@@ -211,6 +211,55 @@ try {
   );
   await capture("electron-window-complete.png");
 
+  await evaluate(
+    `[...document.querySelectorAll(".evaluation-link")]
+      .find((button) => button.textContent.includes("能力中心"))?.click()`
+  );
+  await waitFor(
+    () => evaluate('Boolean(document.querySelector(".capability-view"))'),
+    5_000,
+    "桌面能力中心未打开"
+  );
+  await waitFor(
+    () => evaluate('document.querySelector(".capability-view")?.textContent.includes("内置mcp")'),
+    8_000,
+    "桌面内置 MCP 未显示"
+  );
+  await evaluate(
+    `(() => {
+      const item = [...document.querySelectorAll(".mcp-item")]
+        .find((element) => element.textContent.includes("内置mcp"));
+      const button = [...(item?.querySelectorAll(".capability-inline-actions button") ?? [])]
+        .find((candidate) => candidate.textContent.includes("发现工具"));
+      button?.click();
+      return Boolean(button);
+    })()`
+  );
+  await waitFor(
+    () => evaluate(
+      `fetch("/api/capabilities")
+        .then((response) => response.json())
+        .then((data) => {
+          const server = data.mcpServers.find((item) => item.name === "内置mcp");
+          return server?.status === "connected" && server.tools.length === 3;
+        })`
+    ),
+    20_000,
+    "桌面内置 MCP 工具未完成发现"
+  );
+  const mcpState = await evaluate(
+    `fetch("/api/capabilities")
+      .then((response) => response.json())
+      .then((data) => {
+        const server = data.mcpServers.find((item) => item.name === "内置mcp");
+        return {
+          status: server?.status ?? null,
+          tools: server?.tools.map((tool) => tool.name) ?? []
+        };
+      })`
+  );
+  await capture("electron-capabilities-mcp.png");
+
   if (consoleErrors.length) {
     throw new Error(`Electron 控制台错误：${JSON.stringify(consoleErrors)}`);
   }
@@ -224,10 +273,12 @@ try {
         modelState,
         planDrawerStayedClosed,
         planStreamingObserved,
+        mcpState,
         consoleErrors,
         screenshots: [
           join(screenshotDir, "electron-window.png"),
-          join(screenshotDir, "electron-window-complete.png")
+          join(screenshotDir, "electron-window-complete.png"),
+          join(screenshotDir, "electron-capabilities-mcp.png")
         ]
       },
       null,

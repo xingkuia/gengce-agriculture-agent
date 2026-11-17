@@ -1,5 +1,6 @@
 import { db, makeId } from "./db.js";
 import { inferMcpExecutionMode, normalizeMcpExecutionMode } from "./mcp-policy.js";
+import { resolve } from "node:path";
 import {
   findSkillPolicyViolations,
   normalizeSkillDefinition,
@@ -39,6 +40,7 @@ const scopeDepth: Record<CapabilityBinding["scopeType"], number> = {
 
 export function migrateCapabilityPlane(): void {
   seedSystemSkills();
+  seedDemoMcpServer();
 }
 
 export function getScopeChain(accountId: string, farmId?: string | null, plotId?: string | null): CapabilityScopeRef[] {
@@ -1091,6 +1093,128 @@ function seedSystemSkills(): void {
       throw error;
     }
   }
+}
+
+function seedDemoMcpServer(): void {
+  const account = db.prepare(
+    "SELECT id FROM account WHERE id = 'acct-demo' AND is_demo = 1"
+  ).get() as { id: string } | undefined;
+  if (!account) return;
+
+  const serverId = `mcp-demo-field-ops-${account.id}`;
+  db.prepare(`
+    UPDATE mcp_server SET name = '内置mcp', updated_at = ?
+    WHERE id = ? AND name = '界面验收 MCP'
+  `).run(new Date().toISOString(), serverId);
+
+  const markerId = `demo-field-mcp-v1:${account.id}`;
+  if (db.prepare("SELECT id FROM data_seed_migration WHERE id = ?").get(markerId)) return;
+
+  const existing = db.prepare(
+    "SELECT id FROM mcp_server WHERE account_id = ? AND name = ?"
+  ).get(account.id, "内置mcp") as { id: string } | undefined;
+  if (existing) {
+    markDemoMcpSeedApplied(markerId, "A service with the seeded name already exists; seed skipped");
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const runtimeScript = resolve(process.env.APP_ROOT ?? process.cwd(), "runtime", "demo-mcp.mjs");
+  const tools = [{
+    id: `mcptool-demo-weather-${account.id}`,
+    name: "read_field_weather",
+    title: "读取地块天气",
+    description: "读取指定地块未来三天的公开天气摘要。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        plot: { type: "string", description: "地块名称" }
+      },
+      required: ["plot"]
+    },
+    annotations: { readOnlyHint: true }
+  }, {
+    id: `mcptool-demo-price-${account.id}`,
+    name: "read_market_price",
+    title: "读取市场价格",
+    description: "读取指定天数的公开市场价格摘要。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        days: { type: "integer", minimum: 1, maximum: 30 }
+      },
+      required: ["days"]
+    },
+    annotations: { readOnlyHint: true }
+  }, {
+    id: `mcptool-demo-irrigation-${account.id}`,
+    name: "write_irrigation_log",
+    title: "写入灌溉记录",
+    description: "向外部系统写入一条灌溉记录。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        note: { type: "string" }
+      },
+      required: ["note"]
+    },
+    annotations: { readOnlyHint: false, destructiveHint: true }
+  }];
+
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare(`
+      INSERT INTO mcp_server (
+        id, account_id, name, transport, endpoint, request_headers_json,
+        command, args_json, env_json, status, status_message, last_checked_at,
+        created_at, updated_at
+      ) VALUES (?, ?, '内置mcp', 'stdio', NULL, '{}', ?, ?, ?, 'connected', ?, ?, ?, ?)
+    `).run(
+      serverId,
+      account.id,
+      process.execPath,
+      JSON.stringify([runtimeScript]),
+      JSON.stringify({ ELECTRON_RUN_AS_NODE: "1" }),
+      `已发现 ${tools.length} 个工具`,
+      now,
+      now,
+      now
+    );
+
+    const insertTool = db.prepare(`
+      INSERT INTO mcp_tool (
+        id, server_id, name, title, description, input_schema_json,
+        output_schema_json, annotations_json, enabled, execution_mode, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 1, ?, ?, ?)
+    `);
+    for (const tool of tools) {
+      insertTool.run(
+        tool.id,
+        serverId,
+        tool.name,
+        tool.title,
+        tool.description,
+        JSON.stringify(tool.inputSchema),
+        JSON.stringify(tool.annotations),
+        inferMcpExecutionMode(tool.annotations),
+        now,
+        now
+      );
+    }
+    upsertBinding("mcp", serverId, "account", account.id, false);
+    markDemoMcpSeedApplied(markerId, `${tools.length} runnable demo MCP tools`);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+function markDemoMcpSeedApplied(markerId: string, detail: string): void {
+  db.prepare(`
+    INSERT INTO data_seed_migration (id, applied_at, detail)
+    VALUES (?, ?, ?)
+  `).run(markerId, new Date().toISOString(), detail);
 }
 
 function mapSkill(row: Record<string, unknown>): CapabilitySkill {

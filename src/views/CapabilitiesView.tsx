@@ -404,11 +404,13 @@ function McpPanel({
               <div className="capability-item-title">
                 <span className={`capability-status-dot is-${server.status}`} />
                 <div>
-                  <h4>{server.name}</h4>
-                  <p>
-                    {server.transport === "http" ? server.endpoint : `${server.command} ${server.args.join(" ")}`}
-                    <span> · {server.tools.length} 个工具</span>
-                  </p>
+                  <h4>{server.id.startsWith("mcp-demo-") ? "内置mcp" : server.name}</h4>
+                  {!server.id.startsWith("mcp-demo-") && (
+                    <p>
+                      {server.transport === "http" ? server.endpoint : `${server.command} ${server.args.join(" ")}`}
+                      <span> · {server.tools.length} 个工具</span>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="capability-inline-actions">

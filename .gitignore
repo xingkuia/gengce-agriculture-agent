@@ -19,6 +19,10 @@ data/soil/**/*.part
 *.tsbuildinfo
 .DS_Store
 
+# Local-only whitepaper deliverables
+docs/assets/*.pdf
+docs/assets/*.docx
+
 # Version the verified Hubei SoilGrids dataset used by the application.
 !data/soil/hubei/phh2o_0-5cm_mean_hubei_bbox.tif
 !data/soil/hubei/soc_0-5cm_mean_hubei_bbox.tif
