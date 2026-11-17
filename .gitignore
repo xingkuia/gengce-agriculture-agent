@@ -18,3 +18,11 @@ data/soil/**/*.part
 *.log
 *.tsbuildinfo
 .DS_Store
+
+# Version the verified Hubei SoilGrids dataset used by the application.
+!data/soil/hubei/phh2o_0-5cm_mean_hubei_bbox.tif
+!data/soil/hubei/soc_0-5cm_mean_hubei_bbox.tif
+!data/soil/hubei/sand_0-5cm_mean_hubei_bbox.tif
+!data/soil/hubei/clay_0-5cm_mean_hubei_bbox.tif
+!data/soil/hubei/validity-mask.bin
+!data/soil/hubei/soil-hubei/soil.bin
