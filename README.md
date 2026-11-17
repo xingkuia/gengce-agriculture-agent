@@ -136,6 +136,19 @@ MODEL_VISION_NAME=qwen3-vl-plus
 
 若控制台提供业务空间专属地址，请将 `MODEL_BASE_URL` 替换为对应的 `.../compatible-mode/v1` 地址。也可以使用 `DASHSCOPE_API_KEY` 作为密钥别名。
 
+### 高德地图配置
+
+地块定位、地址搜索和边界绘制使用高德 Web JS API。将本机 Web JS Key 与安全密钥放在项目根目录 `.env`，不要写入源码或提交到公开仓库：
+
+```dotenv
+AMAP_JS_KEY=your-web-js-key
+AMAP_SECURITY_CODE=your-security-code
+```
+
+`AMAP_JS_KEY` 用于浏览器加载地图 SDK；`AMAP_SECURITY_CODE` 只由本地 API 代理附加到高德请求。未配置时仍可手动填写经纬度和面积。
+
+部署到 Docker 或其他环境时，在部署平台的环境变量中配置同名变量；GitHub 仓库只保存 `.env.example` 和部署说明，不保存真实密钥。
+
 ## 数据与边界
 
 - 湖北为首个高置信规则区；其他地区使用全国基础天气、公开土壤与通用作物规则，并降低结论置信度。

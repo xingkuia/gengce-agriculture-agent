@@ -91,6 +91,21 @@ AMAP_SECURITY_CODE=your-security-code
 
 安全密钥由本地 API 代理附加，不直接返回页面。未配置时仍可手动填写坐标和面积。
 
+### 演示环境中的密钥注入
+
+本机演示时，将以下变量写入项目根目录 `.env`：
+
+```dotenv
+AMAP_JS_KEY=your-web-js-key
+AMAP_SECURITY_CODE=your-security-code
+```
+
+使用 Docker Compose 时，Compose 会自动从根目录 `.env` 读取这两个变量并传入容器，无需修改 `docker-compose.yml`。
+
+在 GitHub 仓库中只保留 `.env.example`。如果使用 GitHub Actions 或云主机部署，请把 `AMAP_JS_KEY` 和 `AMAP_SECURITY_CODE` 配置为对应平台的 Secrets/Environment Variables，再由启动命令注入运行时。不要把真实安全密钥提交到 `main`、README、截图或发布包。
+
+建议为演示单独创建高德应用 Key，并按实际访问域名或本机端口配置白名单；比赛结束后可单独吊销该 Key。
+
 ## 5. Docker 部署
 
 ```powershell
