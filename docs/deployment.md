@@ -75,6 +75,7 @@ MODEL_VISION_NAME=qwen3-vl-plus
 - `DASHSCOPE_API_KEY`：`MODEL_API_KEY` 未设置时作为别名使用。
 - `MODEL_SUMMARY_NAME`：证据摘要与文本表达模型。
 - `MODEL_VISION_NAME`：虫害图片观察模型。
+- `OPEN_METEO_URL`：Open-Meteo 预报接口地址，默认 `https://api.open-meteo.com/v1/forecast`；网络受限时可改为允许访问的兼容代理地址。
 - `OPEN_METEO_TIMEOUT_MS`：天气接口超时，默认 `6000`。
 - `SOILGRIDS_TIMEOUT_MS`：土壤接口超时，默认 `4500`。
 

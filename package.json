@@ -25,7 +25,8 @@
     "check:model": "node scripts/check-model.mjs",
     "db:seed:public": "tsx scripts/seed-public-guidance.ts",
     "soil:download": "node scripts/download-hubei-soil.mjs",
-    "soil:prepare": "node scripts/prepare-soil-runtime.mjs"
+    "soil:prepare": "node scripts/prepare-soil-runtime.mjs",
+    "weather:refresh": "tsx scripts/refresh-weather.ts"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",

@@ -1,8 +1,14 @@
+import { getDefaultResultOrder, setDefaultResultOrder } from "node:dns";
 import { plotPosition } from "../geo.js";
 import type { Plot, WeatherDay, WeatherSnapshot, WeatherWarning } from "../types.js";
 import { round, toDateString } from "../data.js";
 
-const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
+const DEFAULT_OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
+
+// Some Windows networks advertise an unreachable Open-Meteo IPv6 route.
+if (getDefaultResultOrder() === "verbatim") {
+  setDefaultResultOrder("ipv4first");
+}
 
 interface OpenMeteoResponse {
   current?: {
@@ -34,21 +40,25 @@ export async function getWeather(
   plot: Plot,
   farm: { latitude: number; longitude: number }
 ): Promise<WeatherSnapshot> {
-  const timeout = Number(process.env.OPEN_METEO_TIMEOUT_MS ?? 6000);
+  const configuredTimeout = Number(process.env.OPEN_METEO_TIMEOUT_MS ?? 6000);
+  const timeout =
+    Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 6000;
+  const position = plotPosition(plot, farm);
+  const openMeteoUrl = process.env.OPEN_METEO_URL?.trim() || DEFAULT_OPEN_METEO_URL;
   const params = new URLSearchParams({
-    latitude: String(plotPosition(plot, farm).latitude),
-    longitude: String(plotPosition(plot, farm).longitude),
+    latitude: String(position.latitude),
+    longitude: String(position.longitude),
     current:
       "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
     hourly: "et0_fao_evapotranspiration,soil_temperature_0cm,soil_moisture_0_to_1cm",
     daily:
       "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,et0_fao_evapotranspiration_sum",
     forecast_days: "7",
-    timezone: "Asia%2FShanghai"
+    timezone: "Asia/Shanghai"
   });
 
   try {
-    const response = await fetch(`${OPEN_METEO_URL}?${params.toString()}`, {
+    const response = await fetch(`${openMeteoUrl}?${params.toString()}`, {
       signal: AbortSignal.timeout(timeout),
       headers: { accept: "application/json" }
     });
@@ -61,33 +71,52 @@ export async function getWeather(
     }
 
     const daily = mapDaily(payload);
-    const soilMoisture =
-      firstFinite(payload.hourly?.soil_moisture_0_to_1cm) !== undefined
-        ? firstFinite(payload.hourly?.soil_moisture_0_to_1cm)! * 100
-        : 27.5;
-    const soilTemperature = firstFinite(payload.hourly?.soil_temperature_0cm) ?? 16.8;
+    const temperature = requiredFinite(
+      payload.current.temperature_2m,
+      "current.temperature_2m"
+    );
+    const humidity = requiredFinite(
+      payload.current.relative_humidity_2m,
+      "current.relative_humidity_2m"
+    );
+    const windSpeed = requiredFinite(
+      payload.current.wind_speed_10m,
+      "current.wind_speed_10m"
+    );
+    const rawSoilMoisture = firstFinite(payload.hourly?.soil_moisture_0_to_1cm);
+    if (rawSoilMoisture === undefined) {
+      throw new Error("Open-Meteo response is missing hourly.soil_moisture_0_to_1cm");
+    }
+    const soilTemperature = firstFinite(payload.hourly?.soil_temperature_0cm);
+    if (soilTemperature === undefined) {
+      throw new Error("Open-Meteo response is missing hourly.soil_temperature_0cm");
+    }
     const et0 =
       firstFinite(payload.hourly?.et0_fao_evapotranspiration) ??
-      firstFinite(payload.daily?.et0_fao_evapotranspiration_sum) ??
-      2.1;
+      firstFinite(payload.daily?.et0_fao_evapotranspiration_sum);
+    if (et0 === undefined) {
+      throw new Error("Open-Meteo response is missing evapotranspiration data");
+    }
 
     const snapshot: WeatherSnapshot = {
       source: "open-meteo",
       fetchedAt: new Date().toISOString(),
       isFallback: false,
       condition: weatherText(payload.current.weather_code),
-      temperature: round(payload.current.temperature_2m ?? 18.2, 1),
-      humidity: round(payload.current.relative_humidity_2m ?? 64, 0),
-      windSpeed: round(payload.current.wind_speed_10m ?? 7.2, 1),
+      temperature: round(temperature, 1),
+      humidity: round(humidity, 0),
+      windSpeed: round(windSpeed, 1),
       precipitation: round(payload.current.precipitation ?? 0, 1),
       et0: round(et0, 1),
       soilTemperature: round(soilTemperature, 1),
-      soilMoisture: round(soilMoisture, 1),
+      soilMoisture: round(rawSoilMoisture * 100, 1),
       daily,
       warnings: buildWarnings(daily, et0)
     };
     return snapshot;
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`[weather] Open-Meteo unavailable; using demo data: ${message}`);
     return fallbackWeather(plot.id);
   }
 }
@@ -97,14 +126,32 @@ function mapDaily(payload: OpenMeteoResponse): WeatherDay[] {
   if (!daily?.time) {
     return [];
   }
-  return daily.time.map((date, index) => ({
-    date,
-    weather: weatherText(daily.weather_code?.[index]),
-    tempMax: round(daily.temperature_2m_max?.[index] ?? 20, 1),
-    tempMin: round(daily.temperature_2m_min?.[index] ?? 10, 1),
-    precipitation: round(daily.precipitation_sum?.[index] ?? 0, 1),
-    windMax: round(daily.wind_speed_10m_max?.[index] ?? 10, 1)
-  }));
+  return daily.time.map((date, index) => {
+    const tempMax = requiredFinite(
+      daily.temperature_2m_max?.[index],
+      `daily.temperature_2m_max[${index}]`
+    );
+    const tempMin = requiredFinite(
+      daily.temperature_2m_min?.[index],
+      `daily.temperature_2m_min[${index}]`
+    );
+    const precipitation = requiredFinite(
+      daily.precipitation_sum?.[index],
+      `daily.precipitation_sum[${index}]`
+    );
+    const windMax = requiredFinite(
+      daily.wind_speed_10m_max?.[index],
+      `daily.wind_speed_10m_max[${index}]`
+    );
+    return {
+      date,
+      weather: weatherText(daily.weather_code?.[index]),
+      tempMax: round(tempMax, 1),
+      tempMin: round(tempMin, 1),
+      precipitation: round(precipitation, 1),
+      windMax: round(windMax, 1)
+    };
+  });
 }
 
 function buildWarnings(daily: WeatherDay[], et0: number): WeatherWarning[] {
@@ -206,4 +253,11 @@ function weatherText(code?: number): string {
 
 function firstFinite(values?: number[]): number | undefined {
   return values?.find((value) => Number.isFinite(value));
+}
+
+function requiredFinite(value: number | undefined, field: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`Open-Meteo response is missing ${field}`);
+  }
+  return value;
 }
