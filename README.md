@@ -120,8 +120,12 @@ DeepSeek：
 MODEL_PROVIDER=deepseek
 MODEL_BASE_URL=https://api.deepseek.com
 MODEL_API_KEY=your-server-side-key
-MODEL_NAME=deepseek-chat
+MODEL_NAME=deepseek-flash
+MODEL_SUMMARY_NAME=deepseek-flash
+MODEL_VISION_NAME=deepseek-flash
 ```
+
+DeepSeek V4.1 Flash 的 API 名称为 `deepseek-flash`，同一接口和密钥用于文本与图片初筛。未设置角色覆盖时，DeepSeek 默认使用该模型；千问视觉默认使用 `qwen3-vl-plus`。切换平台时同步修改或移除旧的 `MODEL_SUMMARY_NAME`、`MODEL_VISION_NAME`，然后重启应用。规则演示不代表真实视觉识别。
 
 阿里云百炼 / 千问：
 
@@ -138,6 +142,8 @@ MODEL_VISION_NAME=qwen3-vl-plus
 
 ### 高德地图配置
 
+在[高德开放平台控制台](https://console.amap.com/)创建应用并添加 **Web 端（JS API）** Key，取得 Key 和对应的安全密钥；本项目使用这组凭据，不是移动端 SDK Key。
+
 地块定位、地址搜索和边界绘制使用高德 Web JS API。将本机 Web JS Key 与安全密钥放在项目根目录 `.env`，不要写入源码或提交到公开仓库：
 
 ```dotenv
@@ -145,11 +151,15 @@ AMAP_JS_KEY=your-web-js-key
 AMAP_SECURITY_CODE=your-security-code
 ```
 
+首次配置先复制 `.env.example` 为 `.env`，已有配置时直接编辑。配置后重启 `pnpm desktop` 或 `pnpm dev`；Docker 用户执行 `docker compose up -d --force-recreate`。进入基地或地块编辑界面，打开地图，检查地图加载、地址搜索与选点。完整说明见[高德地图配置与排查](docs/deployment.md#4-地图配置)。
+
 `AMAP_JS_KEY` 用于浏览器加载地图 SDK；`AMAP_SECURITY_CODE` 只由本地 API 代理附加到高德请求。未配置时仍可手动填写经纬度和面积。
 
 部署到 Docker 或其他环境时，在部署平台的环境变量中配置同名变量；GitHub 仓库只保存 `.env.example` 和部署说明，不保存真实密钥。
 
 ## 数据与边界
+
+评审获取与复现步骤见[源码与运行说明](docs/source-and-run.md)。
 
 - 湖北为首个高置信规则区；其他地区使用全国基础天气、公开土壤与通用作物规则，并降低结论置信度。
 - 当前作物池包括水稻、油菜、小麦、玉米和大豆，其中水稻、油菜和小麦提供更完整的农事指导。

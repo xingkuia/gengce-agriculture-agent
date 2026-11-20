@@ -56,8 +56,12 @@ DeepSeek 示例：
 MODEL_PROVIDER=deepseek
 MODEL_BASE_URL=https://api.deepseek.com
 MODEL_API_KEY=your-server-side-key
-MODEL_NAME=deepseek-chat
+MODEL_NAME=deepseek-flash
+MODEL_SUMMARY_NAME=deepseek-flash
+MODEL_VISION_NAME=deepseek-flash
 ```
+
+DeepSeek V4.1 Flash 对应 API 模型名 `deepseek-flash`，支持文本与图片输入。DeepSeek 的默认文本、视觉模型均为该模型；千问默认文本模型为 `qwen3-max`，视觉为 `qwen3-vl-plus`。显式角色配置优先于默认值，切换提供方时应同步更新或移除旧的角色覆盖。规则模式不能验证真实视觉识别。
 
 千问示例：
 
@@ -86,12 +90,46 @@ MODEL_VISION_NAME=qwen3-vl-plus
 
 地块边界绘制和地址补全使用高德 Web JS API：
 
+### 获取 Key 与安全密钥
+
+高德的 Key 与安全密钥使用方式见[官方 JS API 安全密钥说明](https://lbs.amap.com/api/javascript-api-v2/guide/abc/jscode)。本项目使用服务端代理附加安全密钥。
+
+1. 登录[高德开放平台控制台](https://console.amap.com/)，完成平台要求的账号设置。
+2. 创建或选择应用，添加服务平台为 **Web 端（JS API）** 的 Key。
+3. 在该 Key 的配置中取得对应安全密钥，分别填入下方两项。不要把移动端 SDK Key 当成 Web JS API Key。
+4. 如控制台要求配置访问域名或服务权限，按实际运行环境配置。浏览器开发入口为 `localhost:5173`，Docker 默认为 `localhost:8787`；桌面模式的本地端口自动分配，不应固定假设为 8787。平台具体校验要求以控制台当前提示为准。
+
+### 本地配置与验证
+
+首次运行复制 `.env.example` 为项目根目录的 `.env`，已有文件时直接编辑，保留模型及数据库等配置：
+
 ```dotenv
 AMAP_JS_KEY=your-web-js-key
 AMAP_SECURITY_CODE=your-security-code
 ```
 
 安全密钥由本地 API 代理附加，不直接返回页面。未配置时仍可手动填写坐标和面积。
+
+保存后，退出应用及其本地服务，再执行 `pnpm desktop`；浏览器模式重新启动 `pnpm dev`。进入基地或地块编辑界面，打开地图，检查底图加载、地址搜索、选点与边界绘制。`AMAP_JS_KEY` 用于浏览器加载 SDK，Web Key 会出现在浏览器网络请求中；`AMAP_SECURITY_CODE` 留在服务端代理，不写入前端资源。
+
+桌面应用也可能读取 `%APPDATA%\耕策\.env`；升级旧版时可能沿用 `%APPDATA%\荆野农策\.env`。如果修改项目配置后仍不生效，请同时检查用户目录配置及启动进程环境变量。
+
+### Docker 配置
+
+根目录 `.env` 使用同名变量，Compose 文件已将两项传入容器。修改后重建容器以刷新环境变量：
+
+```powershell
+docker compose up -d --force-recreate
+```
+
+此命令适用于已有镜像；首次部署使用 `docker compose up -d --build`。重新创建容器不会删除已有具名数据卷，不需要执行带 `-v` 的清理命令。
+
+### 地图无法使用时
+
+- 检查 Key 是否为 Web 端（JS API），安全密钥是否属于同一 Key，以及平台授权、配额和访问设置。
+- 确认配置写在运行环境实际读取的 `.env` 中，并已重启应用或重新创建容器。
+- 检查运行机器能否连接高德 SDK 与 API；使用开发者工具查看失败请求和高德返回的错误码，避免在反馈截图中暴露凭据。
+- 本仓库只提供占位配置，不附带私人密钥；评审需使用自己的高德凭据。地图不可用时，可手动填写地块坐标和面积继续演示。
 
 ### 演示环境中的密钥注入
 

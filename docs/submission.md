@@ -10,6 +10,8 @@
 
 ## 3. 可部署性
 
+评审可直接参照[源码与运行说明](source-and-run.md)获取固定版本并启动。模型与高德地图均需使用运行者自己的凭据，具体配置见[部署指南](deployment.md)。
+
 支持三种运行方式：
 
 1. Windows Electron 桌面应用：`pnpm desktop`
