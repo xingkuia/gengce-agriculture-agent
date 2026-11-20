@@ -27,12 +27,15 @@ export function getModelStatus(): ModelStatus {
 export function getModelName(role: ModelRole = "summary"): string {
   const explicit = process.env[`MODEL_${role.toUpperCase()}_NAME`];
   if (explicit) return explicit;
-  if (role === "vision") return "qwen3-vl-plus";
+  const provider = normalizeProvider(process.env.MODEL_PROVIDER);
+  if (role === "vision") {
+    return provider === "deepseek" ? "deepseek-flash" : "qwen3-vl-plus";
+  }
   return (
     process.env.MODEL_NAME ??
     (normalizeProvider(process.env.MODEL_PROVIDER) === "qwen"
       ? "qwen3-max"
-      : "deepseek-chat")
+      : "deepseek-flash")
   );
 }
 
